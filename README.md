@@ -23,7 +23,7 @@ Add the following to your Terraform configuration:
 
 ```hcl
 module "sonarqube_config" {
-  source = "git::https://github.com/UKHomeOffice/core-cloud-sonarqube-config-tf-module.git?ref={tag}"
+  source = "git::https://github.com/Home-Office-Digital/core-cloud-sonarqube-config-tf-module.git?ref={tag}"
 
   sonarqube_host     = var.sonarqube_host
   sonarqube_token    = var.sonarqube_token
