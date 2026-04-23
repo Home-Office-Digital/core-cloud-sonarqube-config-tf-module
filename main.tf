@@ -66,7 +66,7 @@ resource "sonarqube_portfolio" "tenant_portfolio" {
   description    = "Portfolio for ${each.key}"
   selection_mode = "REGEXP"
   regexp         = each.value.project_regex
-  visibility     = "public"
+  visibility     = "private"
 }
 
 # Apply tenant template to portfolio
