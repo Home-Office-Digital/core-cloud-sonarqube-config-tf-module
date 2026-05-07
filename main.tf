@@ -2,10 +2,10 @@ data "sonarqube_groups" "groups" {}
 
 locals {
   available_groups = toset([for group in data.sonarqube_groups.groups.groups : group.name])
-  
+
   # Check global admin exists (applied once per environment)
   global_admin_exists = contains(local.available_groups, var.global_admin_group)
-  
+
   # Build a map of tenant group existence checks
   tenant_group_status = {
     for tenant_name, tenant_config in var.tenants : tenant_name => {
