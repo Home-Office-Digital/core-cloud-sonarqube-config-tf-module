@@ -35,7 +35,7 @@ jobs:
         id: quality-checks
         uses: Home-Office-Digital/core-cloud-workflow-terraform-actions/actions/fmt@main
         with:
-          working-directory: 2."
+          working-directory: "."
 
       - name: Terraform Validate
         if: success() || failure()
