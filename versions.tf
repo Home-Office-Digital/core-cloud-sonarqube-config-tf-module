@@ -10,5 +10,10 @@ terraform {
       source  = "jdamata/sonarqube"
       version = "0.16.21"
     }
+
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.4"
+    }
   }
 }
