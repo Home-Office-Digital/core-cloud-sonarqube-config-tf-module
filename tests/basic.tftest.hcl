@@ -60,6 +60,16 @@ run "creates_templates_portfolios_and_outputs" {
     condition     = output.portfolios["apc"].portfolio_key == "portfolio-apc"
     error_message = "Expected APC portfolio output key naming convention to be preserved."
   }
+
+  assert {
+    condition     = null_resource.apply_portfolio_template["apc"].triggers.portfolio_key == "portfolio-apc"
+    error_message = "Expected apply_template trigger to reference the APC portfolio key."
+  }
+
+  assert {
+    condition     = null_resource.apply_portfolio_template["apc"].triggers.template_name == "apc-template"
+    error_message = "Expected apply_template trigger to reference the APC permission template name."
+  }
 }
 
 run "creates_permissions_only_for_existing_tenant_groups" {
@@ -110,6 +120,16 @@ run "creates_permissions_only_for_existing_tenant_groups" {
   assert {
     condition     = length(sonarqube_permissions.tenant_user_template_permissions) == 2
     error_message = "Expected user template permissions for tenants with existing user groups."
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.tenant_global_admin_permissions) == 1
+    error_message = "Expected tenant admin instance-level permissions only for tenants with existing admin groups."
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.tenant_global_user_permissions) == 2
+    error_message = "Expected tenant user instance-level permissions for tenants with existing user groups."
   }
 
   assert {

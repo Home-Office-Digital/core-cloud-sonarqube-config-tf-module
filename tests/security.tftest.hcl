@@ -115,4 +115,29 @@ run "keeps_permission_sets_within_expected_bounds" {
     ])
     error_message = "Expected global admin instance-level permissions to match approved set."
   }
+
+  assert {
+    condition = sort(sonarqube_permissions.global_admin_template_permissions["apc"].permissions) == sort([
+      "admin",
+      "user"
+    ])
+    error_message = "Expected global admin template permissions to be created when global admin group exists."
+  }
+
+  assert {
+    condition = sort(sonarqube_permissions.tenant_global_admin_permissions["apc"].permissions) == sort([
+      "profileadmin",
+      "gateadmin",
+      "provisioning",
+      "scan"
+    ])
+    error_message = "Expected tenant admin instance-level permissions to match approved set."
+  }
+
+  assert {
+    condition = sort(sonarqube_permissions.tenant_global_user_permissions["apc"].permissions) == sort([
+      "provisioning"
+    ])
+    error_message = "Expected tenant user instance-level permissions to match approved set."
+  }
 }
