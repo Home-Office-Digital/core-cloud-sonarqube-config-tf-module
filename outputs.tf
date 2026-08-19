@@ -32,3 +32,21 @@ output "environment" {
   description = "Environment name"
   value       = var.environment
 }
+
+output "tenanet_tokens" {
+  description = "Generated SonarQube token for each tenant"
+
+  value = {
+    for tenant_name, token in sonarqube_user_token.tenant_token :
+    tenant_name => token.token
+  }
+}
+
+output "tenant_service_accounts" {
+  description = "SonarQube service account for each tenant"
+
+  value = {
+    for tenant_name, user in sonarqube_user.tenant_service_account :
+    tenant_name => user.login_name
+  }
+}

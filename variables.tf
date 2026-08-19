@@ -22,8 +22,9 @@ variable "global_admin_group" {
 variable "tenants" {
   description = "Map of tenant configurations"
   type = map(object({
-    project_regex = string
-    admin_group   = string
-    user_group    = string
+    project_regex   = string
+    admin_group     = string
+    user_group      = string
+    service_account = string
   }))
 }

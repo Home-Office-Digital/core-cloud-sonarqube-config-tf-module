@@ -124,3 +124,26 @@ resource "sonarqube_permissions" "tenant_global_user_permissions" {
   group_name  = each.value.user_group
   permissions = ["provisioning"]
 }
+
+# Create service account (user) for each tenant
+resource "sonarqube_user" "tenant_service_account"{
+  for_each = var.tenants
+
+  login_name = each.value.service_account
+  name       = "${each.key} SonarQube Service Account"
+  is_local   = true
+}
+
+# Generate SonarQube token for each tenant service account
+resource "sonarqube_user_token" "tenant_token"{
+  for_each = var.tenants
+
+  login_name = sonarqube_user.tenant_service_account[each.key].login_name
+  name       = "${each.key}-sonar-analysis"
+  type       = "USER_TOKEN" # PROJECT_ANALYSIS_TOKEN for restricted specified project? 
+
+  depends_on = [ 
+    sonarqube_user.tenant_service_account
+   ]
+}
+
