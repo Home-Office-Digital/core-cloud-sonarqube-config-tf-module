@@ -70,6 +70,11 @@ run "creates_templates_portfolios_and_outputs" {
     condition     = null_resource.apply_portfolio_template["apc"].triggers.template_name == "apc-template"
     error_message = "Expected apply_template trigger to reference the APC permission template name."
   }
+
+  assert {
+    condition     = null_resource.apply_portfolio_template["apc"].triggers.template_permissions != ""
+    error_message = "Expected apply_template to track template permissions so it re-applies when grants change."
+  }
 }
 
 run "creates_permissions_only_for_existing_tenant_groups" {
