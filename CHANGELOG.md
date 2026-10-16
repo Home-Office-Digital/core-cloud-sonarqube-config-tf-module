@@ -8,4 +8,4 @@ eg:
 
 ### [0.1.1] 2026-10-16
 
-  * Fix: Re-apply the permission template to each portfolio whenever there is a change. 
+  * Fix: Re-apply the permission template to each portfolio whenever there is a change.

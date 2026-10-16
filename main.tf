@@ -76,11 +76,19 @@ resource "null_resource" "apply_portfolio_template" {
     portfolio_key = sonarqube_portfolio.tenant_portfolio[each.key].key
     template_name = sonarqube_permission_template.tenant_template[each.key].name
 
-    # Re-apply whenever the set of granted template permissions changes.
     template_permissions = sha256(jsonencode({
-      user         = contains(keys(sonarqube_permissions.tenant_user_template_permissions), each.key) ? sonarqube_permissions.tenant_user_template_permissions[each.key].permissions : []
-      admin        = contains(keys(sonarqube_permissions.tenant_admin_template_permissions), each.key) ? sonarqube_permissions.tenant_admin_template_permissions[each.key].permissions : []
-      global_admin = contains(keys(sonarqube_permissions.global_admin_template_permissions), each.key) ? sonarqube_permissions.global_admin_template_permissions[each.key].permissions : []
+      user = contains(keys(sonarqube_permissions.tenant_user_template_permissions), each.key) ? {
+        group_name  = sonarqube_permissions.tenant_user_template_permissions[each.key].group_name
+        permissions = sonarqube_permissions.tenant_user_template_permissions[each.key].permissions
+      } : null
+      admin = contains(keys(sonarqube_permissions.tenant_admin_template_permissions), each.key) ? {
+        group_name  = sonarqube_permissions.tenant_admin_template_permissions[each.key].group_name
+        permissions = sonarqube_permissions.tenant_admin_template_permissions[each.key].permissions
+      } : null
+      global_admin = contains(keys(sonarqube_permissions.global_admin_template_permissions), each.key) ? {
+        group_name  = sonarqube_permissions.global_admin_template_permissions[each.key].group_name
+        permissions = sonarqube_permissions.global_admin_template_permissions[each.key].permissions
+      } : null
     }))
   }
 
