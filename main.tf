@@ -69,20 +69,27 @@ resource "sonarqube_portfolio" "tenant_portfolio" {
   visibility     = "private"
 }
 
-# Apply tenant template to portfolio
 resource "null_resource" "apply_portfolio_template" {
   for_each = var.tenants
 
   triggers = {
     portfolio_key = sonarqube_portfolio.tenant_portfolio[each.key].key
     template_name = sonarqube_permission_template.tenant_template[each.key].name
+
+    # Re-apply whenever the set of granted template permissions changes.
+    template_permissions = sha256(jsonencode({
+      user         = contains(keys(sonarqube_permissions.tenant_user_template_permissions), each.key) ? sonarqube_permissions.tenant_user_template_permissions[each.key].permissions : []
+      admin        = contains(keys(sonarqube_permissions.tenant_admin_template_permissions), each.key) ? sonarqube_permissions.tenant_admin_template_permissions[each.key].permissions : []
+      global_admin = contains(keys(sonarqube_permissions.global_admin_template_permissions), each.key) ? sonarqube_permissions.global_admin_template_permissions[each.key].permissions : []
+    }))
   }
 
   provisioner "local-exec" {
     command = <<-EOT
       curl -X POST "${var.sonarqube_host}/api/permissions/apply_template" \
         -H "Authorization: Bearer ${var.sonarqube_token}" \
-        -d "templateName=${sonarqube_permission_template.tenant_template[each.key].name}&projectKey=portfolio-${each.key}" \
+        --data-urlencode "templateName=${sonarqube_permission_template.tenant_template[each.key].name}" \
+        --data-urlencode "projectKey=portfolio-${each.key}" \
         --fail --silent --show-error
     EOT
   }

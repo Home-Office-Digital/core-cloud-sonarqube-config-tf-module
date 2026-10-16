@@ -5,3 +5,7 @@ eg:
 ### [0.0.1] 2026-03-13
 
   * Initial tag created for Core Cloud Sonarqube Config Terraform module
+
+### [0.1.1] 2026-10-16
+
+  * Fix: Re-apply the permission template to each portfolio whenever there is a change. 
