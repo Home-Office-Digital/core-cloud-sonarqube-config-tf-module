@@ -1,12 +1,9 @@
 mock_provider "sonarqube" {}
-mock_provider "null" {}
 
 run "enforces_metadata_naming_conventions" {
   command = plan
 
   variables {
-    sonarqube_host     = "https://sonarqube.example.internal"
-    sonarqube_token    = "dummy-token"
     environment        = "sandbox-ops-tooling"
     global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
 
