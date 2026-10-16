@@ -1,12 +1,9 @@
 mock_provider "sonarqube" {}
-mock_provider "null" {}
 
 run "skips_global_admin_permissions_when_group_missing" {
   command = plan
 
   variables {
-    sonarqube_host     = "https://sonarqube.example.internal"
-    sonarqube_token    = "dummy-token"
     environment        = "sandbox-ops-tooling"
     global_admin_group = "PERM-C-SONAR-Missing-GlobalAdminGroup"
 
@@ -53,8 +50,6 @@ run "keeps_permission_sets_within_expected_bounds" {
   command = plan
 
   variables {
-    sonarqube_host     = "https://sonarqube.example.internal"
-    sonarqube_token    = "dummy-token"
     environment        = "sandbox-ops-tooling"
     global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
 

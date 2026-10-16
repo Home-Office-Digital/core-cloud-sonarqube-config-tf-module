@@ -1,14 +1,3 @@
-variable "sonarqube_host" {
-  description = "SonarQube server URL"
-  type        = string
-}
-
-variable "sonarqube_token" {
-  description = "SonarQube auth token"
-  type        = string
-  sensitive   = true
-}
-
 variable "environment" {
   description = "Environment name"
   type        = string

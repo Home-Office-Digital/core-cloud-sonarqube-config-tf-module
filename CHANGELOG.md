@@ -6,6 +6,8 @@ eg:
 
   * Initial tag created for Core Cloud Sonarqube Config Terraform module
 
-### [0.1.1] 2026-10-16
+### [0.2.0] 2026-10-16
 
-  * Fix: Re-apply the permission template to each portfolio whenever there is a change.
+  * Fix: The apply_template strips the admin user of sonar-administrators, causing perm issues on subsequent runs. Portfolio permissions should use portfolio-scoped sonarqube_permissions resources instead.
+  * Deprecated the `sonarqube_host` and `sonarqube_token` variables. They are no
+    longer used now that we've done away with the `apply_template` provisioner

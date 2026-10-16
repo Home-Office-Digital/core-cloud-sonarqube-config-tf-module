@@ -69,46 +69,37 @@ resource "sonarqube_portfolio" "tenant_portfolio" {
   visibility     = "private"
 }
 
-resource "null_resource" "apply_portfolio_template" {
-  for_each = var.tenants
-
-  triggers = {
-    portfolio_key = sonarqube_portfolio.tenant_portfolio[each.key].key
-    template_name = sonarqube_permission_template.tenant_template[each.key].name
-
-    template_permissions = sha256(jsonencode({
-      user = contains(keys(sonarqube_permissions.tenant_user_template_permissions), each.key) ? {
-        group_name  = sonarqube_permissions.tenant_user_template_permissions[each.key].group_name
-        permissions = sonarqube_permissions.tenant_user_template_permissions[each.key].permissions
-      } : null
-      admin = contains(keys(sonarqube_permissions.tenant_admin_template_permissions), each.key) ? {
-        group_name  = sonarqube_permissions.tenant_admin_template_permissions[each.key].group_name
-        permissions = sonarqube_permissions.tenant_admin_template_permissions[each.key].permissions
-      } : null
-      global_admin = contains(keys(sonarqube_permissions.global_admin_template_permissions), each.key) ? {
-        group_name  = sonarqube_permissions.global_admin_template_permissions[each.key].group_name
-        permissions = sonarqube_permissions.global_admin_template_permissions[each.key].permissions
-      } : null
-    }))
+# User group: browse + see source on the portfolio
+resource "sonarqube_permissions" "portfolio_user_permissions" {
+  for_each = {
+    for tenant_name, tenant_config in var.tenants : tenant_name => tenant_config
+    if local.tenant_group_status[tenant_name].user_exists
   }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      curl -X POST "${var.sonarqube_host}/api/permissions/apply_template" \
-        -H "Authorization: Bearer ${var.sonarqube_token}" \
-        --data-urlencode "templateName=${sonarqube_permission_template.tenant_template[each.key].name}" \
-        --data-urlencode "projectKey=portfolio-${each.key}" \
-        --fail --silent --show-error
-    EOT
+  group_name  = each.value.user_group
+  project_key = sonarqube_portfolio.tenant_portfolio[each.key].key
+  permissions = ["codeviewer", "user"]
+}
+
+# Admin group: full management on the portfolio
+resource "sonarqube_permissions" "portfolio_admin_permissions" {
+  for_each = {
+    for tenant_name, tenant_config in var.tenants : tenant_name => tenant_config
+    if local.tenant_group_status[tenant_name].admin_exists
   }
 
-  depends_on = [
-    sonarqube_portfolio.tenant_portfolio,
-    sonarqube_permission_template.tenant_template,
-    sonarqube_permissions.tenant_admin_template_permissions,
-    sonarqube_permissions.tenant_user_template_permissions,
-    sonarqube_permissions.global_admin_template_permissions
-  ]
+  group_name  = each.value.admin_group
+  project_key = sonarqube_portfolio.tenant_portfolio[each.key].key
+  permissions = ["admin", "user", "codeviewer", "issueadmin", "securityhotspotadmin"]
+}
+
+# Global admin group: admin + browse on every portfolio
+resource "sonarqube_permissions" "portfolio_global_admin_permissions" {
+  for_each = local.global_admin_exists ? var.tenants : {}
+
+  group_name  = var.global_admin_group
+  project_key = sonarqube_portfolio.tenant_portfolio[each.key].key
+  permissions = ["admin", "user"]
 }
 
 # Global admin instance-level permissions

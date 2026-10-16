@@ -1,12 +1,9 @@
 mock_provider "sonarqube" {}
-mock_provider "null" {}
 
 run "creates_templates_portfolios_and_outputs" {
   command = plan
 
   variables {
-    sonarqube_host     = "https://sonarqube.example.internal"
-    sonarqube_token    = "dummy-token"
     environment        = "sandbox-ops-tooling"
     global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
 
@@ -62,18 +59,23 @@ run "creates_templates_portfolios_and_outputs" {
   }
 
   assert {
-    condition     = null_resource.apply_portfolio_template["apc"].triggers.portfolio_key == "portfolio-apc"
-    error_message = "Expected apply_template trigger to reference the APC portfolio key."
+    condition     = length(sonarqube_permissions.portfolio_user_permissions) == 2
+    error_message = "Expected one portfolio user permission grant per tenant with an existing user group."
   }
 
   assert {
-    condition     = null_resource.apply_portfolio_template["apc"].triggers.template_name == "apc-template"
-    error_message = "Expected apply_template trigger to reference the APC permission template name."
+    condition     = length(sonarqube_permissions.portfolio_admin_permissions) == 2
+    error_message = "Expected one portfolio admin permission grant per tenant with an existing admin group."
   }
 
   assert {
-    condition     = null_resource.apply_portfolio_template["apc"].triggers.template_permissions != ""
-    error_message = "Expected apply_template to track template permissions so it re-applies when grants change."
+    condition     = length(sonarqube_permissions.portfolio_global_admin_permissions) == 2
+    error_message = "Expected one portfolio global-admin permission grant per tenant when the global admin group exists."
+  }
+
+  assert {
+    condition     = sonarqube_permissions.portfolio_user_permissions["apc"].project_key == "portfolio-apc"
+    error_message = "Expected portfolio permissions to be scoped to the portfolio key (additive project_key scope, not apply_template)."
   }
 }
 
@@ -81,8 +83,6 @@ run "creates_permissions_only_for_existing_tenant_groups" {
   command = plan
 
   variables {
-    sonarqube_host     = "https://sonarqube.example.internal"
-    sonarqube_token    = "dummy-token"
     environment        = "sandbox-ops-tooling"
     global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
 
