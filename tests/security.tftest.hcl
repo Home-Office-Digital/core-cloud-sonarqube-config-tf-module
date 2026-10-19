@@ -184,6 +184,16 @@ run "default_template_is_private_by_default_when_managed" {
     condition     = !contains(["sonar-users"], sonarqube_permissions.default_template_admin[0].group_name)
     error_message = "The managed default template must not grant sonar-users."
   }
+
+  assert {
+    condition     = length(sonarqube_setting.default_project_visibility) == 1
+    error_message = "Expected the default project visibility setting to be managed when manage_default_template is true."
+  }
+
+  assert {
+    condition     = sonarqube_setting.default_project_visibility[0].value == "private"
+    error_message = "Expected default project visibility to be enforced as private (template grants alone do not hide public projects)."
+  }
 }
 
 run "default_template_not_touched_when_unmanaged" {
@@ -217,5 +227,10 @@ run "default_template_not_touched_when_unmanaged" {
   assert {
     condition     = length(sonarqube_permission_template.default_template) == 0
     error_message = "Expected no managed default template when manage_default_template is false (instance default left untouched)."
+  }
+
+  assert {
+    condition     = length(sonarqube_setting.default_project_visibility) == 0
+    error_message = "Expected default project visibility to be left untouched when manage_default_template is false."
   }
 }

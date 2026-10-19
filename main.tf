@@ -41,6 +41,14 @@ resource "sonarqube_permissions" "default_template_admin" {
   permissions = ["admin", "codeviewer", "issueadmin", "securityhotspotadmin", "user"]
 }
 
+# Enforce private default project visibility.
+resource "sonarqube_setting" "default_project_visibility" {
+  count = var.manage_default_template ? 1 : 0
+
+  key   = "projects.default.visibility"
+  value = "private"
+}
+
 
 # Apply user group permissions to the tenant template
 resource "sonarqube_permissions" "tenant_user_template_permissions" {
