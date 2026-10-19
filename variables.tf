@@ -16,3 +16,15 @@ variable "tenants" {
     user_group    = string
   }))
 }
+
+variable "manage_default_template" {
+  description = "When true, the module creates and sets a managed default permission template that grants NO sonar-users (all authenticated users) access, so new projects that do not match a tenant pattern are private by default rather than world-visible. Leave false to not touch the instance default template."
+  type        = bool
+  default     = false
+}
+
+variable "default_template_name" {
+  description = "Name of the module-managed default permission template. Only used when manage_default_template is true."
+  type        = string
+  default     = "core-cloud-managed-default-template"
+}

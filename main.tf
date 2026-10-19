@@ -23,6 +23,32 @@ resource "sonarqube_permission_template" "tenant_template" {
   project_key_pattern = each.value.project_regex
 }
 
+# Default template, as a fallback for new projects not matching anything. Currently, this would allow any user to view these projects
+resource "sonarqube_permission_template" "default_template" {
+  count = var.manage_default_template ? 1 : 0
+
+  name        = var.default_template_name
+  description = "Core Cloud managed default template. Grants no sonar-users access so new non-tenant projects are private by default."
+  default     = true
+}
+
+# Keep system administrators able to administer new non-tenant projects. Removes sonar-users grant as we don't want everyone to be able to see these projects.
+resource "sonarqube_permissions" "default_template_admin" {
+  count = var.manage_default_template ? 1 : 0
+
+  group_name  = "sonar-administrators"
+  template_id = sonarqube_permission_template.default_template[0].id
+  permissions = ["admin", "codeviewer", "issueadmin", "securityhotspotadmin", "user"]
+}
+
+# Enforce private default project visibility.
+resource "sonarqube_setting" "default_project_visibility" {
+  count = var.manage_default_template ? 1 : 0
+
+  key   = "projects.default.visibility"
+  value = "private"
+}
+
 
 # Apply user group permissions to the tenant template
 resource "sonarqube_permissions" "tenant_user_template_permissions" {

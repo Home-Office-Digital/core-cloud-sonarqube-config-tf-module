@@ -11,3 +11,7 @@ eg:
   * Fix: The apply_template strips the admin user of sonar-administrators, causing perm issues on subsequent runs. Portfolio permissions should use portfolio-scoped sonarqube_permissions resources instead.
   * Deprecated the `sonarqube_host` and `sonarqube_token` variables. They are no
     longer used now that we've done away with the `apply_template` provisioner
+
+### [0.2.1] 2026-10-16
+
+  * Fix: Removes sonar-users from being able to see projects with no project-scope permission having access to the Default template
