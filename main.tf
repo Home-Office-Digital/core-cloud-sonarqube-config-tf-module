@@ -6,6 +6,8 @@ locals {
   # Check global admin exists (applied once per environment)
   global_admin_exists = contains(local.available_groups, var.global_admin_group)
 
+  system_admin_exists = var.system_admin_group != null && contains(local.available_groups, coalesce(var.system_admin_group, "-"))
+
   # Build a map of tenant group existence checks
   tenant_group_status = {
     for tenant_name, tenant_config in var.tenants : tenant_name => {
@@ -37,6 +39,16 @@ resource "sonarqube_permissions" "default_template_admin" {
   count = var.manage_default_template ? 1 : 0
 
   group_name  = "sonar-administrators"
+  template_id = sonarqube_permission_template.default_template[0].id
+  permissions = ["admin", "codeviewer", "issueadmin", "securityhotspotadmin", "user"]
+}
+
+# When system_admin_group is overridden, it must also keep access to new non-tenant projects. The built-in
+# sonar-administrators grant above is left as is; this only adds the configured group when it is a different group.
+resource "sonarqube_permissions" "default_template_system_admin" {
+  count = var.manage_default_template && local.system_admin_exists && var.system_admin_group != "sonar-administrators" ? 1 : 0
+
+  group_name  = var.system_admin_group
   template_id = sonarqube_permission_template.default_template[0].id
   permissions = ["admin", "codeviewer", "issueadmin", "securityhotspotadmin", "user"]
 }
@@ -81,6 +93,14 @@ resource "sonarqube_permissions" "global_admin_template_permissions" {
   group_name  = var.global_admin_group
   template_id = sonarqube_permission_template.tenant_template[each.key].id
   permissions = ["admin", "user"]
+}
+
+resource "sonarqube_permissions" "system_admin_template_permissions" {
+  for_each = local.system_admin_exists ? var.tenants : {}
+
+  group_name  = var.system_admin_group
+  template_id = sonarqube_permission_template.tenant_template[each.key].id
+  permissions = ["admin", "user", "codeviewer", "issueadmin", "securityhotspotadmin", "scan"]
 }
 
 # Portfolio per tenant

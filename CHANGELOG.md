@@ -15,3 +15,9 @@ eg:
 ### [0.2.1] 2026-10-16
 
   * Fix: Removes sonar-users from being able to see projects with no project-scope permission having access to the Default template
+
+### [0.2.2] 2026-11-17
+
+  * Fix: For the hod automation to be able to update tags for existing projects, the `sonar-administrators` group needs to be applied on every template so that the automation's token, which is the `admin` user (who is the only member of the sonar-administrators group) has access to read and update tags
+  * When `system_admin_group` is overridden and `manage_default_template` is true, the configured group is also granted on the managed default template (alongside the built-in `sonar-administrators` grant, which is unchanged), so it keeps access to new non-tenant projects.
+  * `system_admin_group` is validated to differ from `global_admin_group` and every tenant `admin_group`/`user_group`. Each permissions resource is authoritative for one group on one template, so overlapping resources would overwrite each other and changing the variable later could revoke access.
