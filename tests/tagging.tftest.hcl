@@ -9,14 +9,14 @@ run "enforces_metadata_naming_conventions" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
       apa = {
-        project_regex = "^apa-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apa"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }

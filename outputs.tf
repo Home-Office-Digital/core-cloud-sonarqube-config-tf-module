@@ -9,9 +9,9 @@ output "portfolios" {
 }
 
 output "tenant_template_ids" {
-  description = "Permission template IDs for all tenants"
+  description = "Permission template IDs, keyed by team"
   value = {
-    for tenant_name, _ in var.tenants : tenant_name => sonarqube_permission_template.tenant_template[tenant_name].id
+    for key, _ in local.templates : key => sonarqube_permission_template.tenant_template[key].id
   }
 }
 

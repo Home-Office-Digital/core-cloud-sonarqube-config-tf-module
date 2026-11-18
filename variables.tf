@@ -9,12 +9,35 @@ variable "global_admin_group" {
 }
 
 variable "tenants" {
-  description = "Map of tenant configurations"
+  description = <<-EOT
+    Projects are associated with a tenant by `teams`: a list of
+    `team` values (as resolved by core-cloud-hod-git-configuration).
+  EOT
   type = map(object({
-    project_regex = string
-    admin_group   = string
-    user_group    = string
+    teams       = list(string)
+    admin_group = string
+    user_group  = string
   }))
+
+  validation {
+    condition     = alltrue([for t in values(var.tenants) : length(t.teams) > 0])
+    error_message = "Each tenant must list at least one team in teams."
+  }
+
+  validation {
+    condition = alltrue([
+      for t in values(var.tenants) : alltrue([for o in t.teams : can(regex("^[a-z0-9-]+$", o))])
+    ])
+    error_message = "teams values must be valid SonarQube tags matching ^[a-z0-9-]+$."
+  }
+
+  validation {
+    condition = (
+      length(flatten([for t in values(var.tenants) : t.teams])) ==
+      length(distinct(flatten([for t in values(var.tenants) : t.teams])))
+    )
+    error_message = "A team may only be listed under one tenant."
+  }
 }
 
 variable "system_admin_group" {
