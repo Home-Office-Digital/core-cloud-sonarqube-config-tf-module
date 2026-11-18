@@ -9,9 +9,9 @@ run "skips_global_admin_permissions_when_group_missing" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
@@ -55,9 +55,9 @@ run "keeps_permission_sets_within_expected_bounds" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
@@ -147,9 +147,9 @@ run "default_template_is_private_by_default_when_managed" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
@@ -206,9 +206,9 @@ run "default_template_not_touched_when_unmanaged" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
@@ -244,14 +244,14 @@ run "grants_system_admin_group_on_every_template" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
       apa = {
-        project_regex = "^apa-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apa"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -293,9 +293,9 @@ run "default_system_admin_group_not_duplicated_on_default_template" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -331,9 +331,9 @@ run "overridden_system_admin_group_also_granted_on_default_template" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -391,9 +391,9 @@ run "overridden_system_admin_group_missing_is_skipped_on_default_template" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -424,9 +424,9 @@ run "overridden_system_admin_group_not_applied_when_default_template_unmanaged" 
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -457,9 +457,9 @@ run "rejects_system_admin_group_equal_to_global_admin_group" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "U"
       }
     }
   }
@@ -477,9 +477,9 @@ run "rejects_system_admin_group_equal_to_tenant_admin_group" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "tenant-admins"
-        user_group    = "U"
+        teams       = ["apc"]
+        admin_group = "tenant-admins"
+        user_group  = "U"
       }
     }
   }
@@ -497,9 +497,9 @@ run "rejects_system_admin_group_equal_to_tenant_user_group" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "A"
-        user_group    = "tenant-users"
+        teams       = ["apc"]
+        admin_group = "A"
+        user_group  = "tenant-users"
       }
     }
   }

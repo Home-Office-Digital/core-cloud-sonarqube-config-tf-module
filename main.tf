@@ -17,12 +17,22 @@ locals {
   }
 }
 
-resource "sonarqube_permission_template" "tenant_template" {
-  for_each = var.tenants
+# One permission template per team. Templates have no key pattern (SonarQube cannot match
+# templates on tags), so the onboarding pipeline applies "<team>-template" explicitly to a project
+# when it is created.
+locals {
+  templates = merge([
+    for tenant_name, tenant_config in var.tenants : {
+      for team in tenant_config.teams : team => { tenant = tenant_name }
+    }
+  ]...)
+}
 
-  name                = "${each.key}-template"
-  description         = "Permission template for ${each.key}"
-  project_key_pattern = each.value.project_regex
+resource "sonarqube_permission_template" "tenant_template" {
+  for_each = local.templates
+
+  name        = "${each.key}-template"
+  description = "Permission template for ${each.key} (tenant ${each.value.tenant})"
 }
 
 # Default template, as a fallback for new projects not matching anything. Currently, this would allow any user to view these projects
@@ -65,11 +75,11 @@ resource "sonarqube_setting" "default_project_visibility" {
 # Apply user group permissions to the tenant template
 resource "sonarqube_permissions" "tenant_user_template_permissions" {
   for_each = {
-    for tenant_name, tenant_config in var.tenants : tenant_name => tenant_config
-    if local.tenant_group_status[tenant_name].user_exists
+    for key, template in local.templates : key => template
+    if local.tenant_group_status[template.tenant].user_exists
   }
 
-  group_name  = each.value.user_group
+  group_name  = var.tenants[each.value.tenant].user_group
   template_id = sonarqube_permission_template.tenant_template[each.key].id
   permissions = ["codeviewer", "user"]
 }
@@ -77,26 +87,29 @@ resource "sonarqube_permissions" "tenant_user_template_permissions" {
 # Apply admin group permissions to the tenant template
 resource "sonarqube_permissions" "tenant_admin_template_permissions" {
   for_each = {
-    for tenant_name, tenant_config in var.tenants : tenant_name => tenant_config
-    if local.tenant_group_status[tenant_name].admin_exists
+    for key, template in local.templates : key => template
+    if local.tenant_group_status[template.tenant].admin_exists
   }
 
-  group_name  = each.value.admin_group
+  group_name  = var.tenants[each.value.tenant].admin_group
   template_id = sonarqube_permission_template.tenant_template[each.key].id
   permissions = ["admin", "user", "codeviewer", "issueadmin", "securityhotspotadmin", "scan"]
 }
 
 # Apply global admin group permissions to the tenant template
 resource "sonarqube_permissions" "global_admin_template_permissions" {
-  for_each = local.global_admin_exists ? var.tenants : {}
+  for_each = local.global_admin_exists ? local.templates : {}
 
   group_name  = var.global_admin_group
   template_id = sonarqube_permission_template.tenant_template[each.key].id
   permissions = ["admin", "user"]
 }
 
+# System admin group (contains the local admin user used by automation): Administer System is instance-level
+# and does not give access to a project, so grant it on every template or projects become invisible to the
+# pipeline that tags them and mints their tokens.
 resource "sonarqube_permissions" "system_admin_template_permissions" {
-  for_each = local.system_admin_exists ? var.tenants : {}
+  for_each = local.system_admin_exists ? local.templates : {}
 
   group_name  = var.system_admin_group
   template_id = sonarqube_permission_template.tenant_template[each.key].id
@@ -110,8 +123,8 @@ resource "sonarqube_portfolio" "tenant_portfolio" {
   key            = "portfolio-${each.key}"
   name           = "portfolio-${each.key}"
   description    = "Portfolio for ${each.key}"
-  selection_mode = "REGEXP"
-  regexp         = each.value.project_regex
+  selection_mode = "TAGS"
+  tags           = each.value.teams
   visibility     = "private"
 }
 

@@ -9,14 +9,14 @@ run "creates_templates_portfolios_and_outputs" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
       apa = {
-        project_regex = "^apa-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apa"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
@@ -88,14 +88,14 @@ run "creates_permissions_only_for_existing_tenant_groups" {
 
     tenants = {
       apc = {
-        project_regex = "^apc-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apc"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Test-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
       apa = {
-        project_regex = "^apa-.*"
-        admin_group   = "PERM-C-SONAR-CoreCloudPlatform-Missing-AdminGroup"
-        user_group    = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
+        teams       = ["apa"]
+        admin_group = "PERM-C-SONAR-CoreCloudPlatform-Missing-AdminGroup"
+        user_group  = "PERM-C-SONAR-CoreCloudPlatform-Test-UserGroup"
       }
     }
   }
