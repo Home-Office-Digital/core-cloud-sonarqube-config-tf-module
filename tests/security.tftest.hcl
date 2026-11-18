@@ -234,3 +234,275 @@ run "default_template_not_touched_when_unmanaged" {
     error_message = "Expected default project visibility to be left untouched when manage_default_template is false."
   }
 }
+
+run "grants_system_admin_group_on_every_template" {
+  command = plan
+
+  variables {
+    environment        = "sandbox-ops-tooling"
+    global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+      apa = {
+        project_regex = "^apa-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  override_data {
+    target = data.sonarqube_groups.groups
+    values = {
+      groups = [
+        { name = "sonar-administrators" }
+      ]
+    }
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.system_admin_template_permissions) == 2
+    error_message = "Expected the system admin group on every tenant template."
+  }
+
+  assert {
+    condition = sort(sonarqube_permissions.system_admin_template_permissions["apc"].permissions) == sort([
+      "admin",
+      "user",
+      "codeviewer",
+      "issueadmin",
+      "securityhotspotadmin",
+      "scan"
+    ])
+    error_message = "Expected system admin group template permissions to match the approved set (user = Browse, admin, scan are required by the tagging automation)."
+  }
+}
+
+run "default_system_admin_group_not_duplicated_on_default_template" {
+  command = plan
+
+  variables {
+    environment             = "sandbox-ops-tooling"
+    global_admin_group      = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    manage_default_template = true
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  override_data {
+    target = data.sonarqube_groups.groups
+    values = {
+      groups = [
+        { name = "sonar-administrators" }
+      ]
+    }
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.default_template_system_admin) == 0
+    error_message = "Default system admin group must not get a duplicate grant on the managed default template."
+  }
+
+  assert {
+    condition     = sonarqube_permissions.default_template_admin[0].group_name == "sonar-administrators"
+    error_message = "Built-in sonar-administrators grant on the managed default template must remain."
+  }
+}
+
+run "overridden_system_admin_group_also_granted_on_default_template" {
+  command = plan
+
+  variables {
+    environment             = "sandbox-ops-tooling"
+    global_admin_group      = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    manage_default_template = true
+    system_admin_group      = "custom-admins"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  override_data {
+    target = data.sonarqube_groups.groups
+    values = {
+      groups = [
+        { name = "sonar-administrators" },
+        { name = "custom-admins" }
+      ]
+    }
+  }
+
+  assert {
+    condition     = sonarqube_permissions.default_template_admin[0].group_name == "sonar-administrators"
+    error_message = "Built-in sonar-administrators grant on the managed default template must remain."
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.default_template_system_admin) == 1
+    error_message = "Overridden system admin group must also be granted on the managed default template."
+  }
+
+  assert {
+    condition     = sonarqube_permissions.default_template_system_admin[0].group_name == "custom-admins"
+    error_message = "Expected the configured system admin group on the managed default template."
+  }
+
+  assert {
+    condition = sort(sonarqube_permissions.default_template_system_admin[0].permissions) == sort([
+      "admin",
+      "codeviewer",
+      "issueadmin",
+      "securityhotspotadmin",
+      "user"
+    ])
+    error_message = "Expected the configured system admin group to match the built-in administrator permission set on the default template."
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.system_admin_template_permissions) == 1
+    error_message = "Overridden system admin group must also be granted on tenant templates."
+  }
+}
+
+run "overridden_system_admin_group_missing_is_skipped_on_default_template" {
+  command = plan
+
+  variables {
+    environment             = "sandbox-ops-tooling"
+    global_admin_group      = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    manage_default_template = true
+    system_admin_group      = "custom-admins"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  override_data {
+    target = data.sonarqube_groups.groups
+    values = {
+      groups = [
+        { name = "sonar-administrators" }
+      ]
+    }
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.default_template_system_admin) == 0
+    error_message = "No grant expected on the default template when the configured group does not exist."
+  }
+}
+
+run "overridden_system_admin_group_not_applied_when_default_template_unmanaged" {
+  command = plan
+
+  variables {
+    environment             = "sandbox-ops-tooling"
+    global_admin_group      = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    manage_default_template = false
+    system_admin_group      = "custom-admins"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  override_data {
+    target = data.sonarqube_groups.groups
+    values = {
+      groups = [
+        { name = "sonar-administrators" },
+        { name = "custom-admins" }
+      ]
+    }
+  }
+
+  assert {
+    condition     = length(sonarqube_permissions.default_template_system_admin) == 0
+    error_message = "Nothing expected when the default template is not managed."
+  }
+}
+
+run "rejects_system_admin_group_equal_to_global_admin_group" {
+  command = plan
+
+  variables {
+    environment        = "sandbox-ops-tooling"
+    global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    system_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "U"
+      }
+    }
+  }
+
+  expect_failures = [var.system_admin_group]
+}
+
+run "rejects_system_admin_group_equal_to_tenant_admin_group" {
+  command = plan
+
+  variables {
+    environment        = "sandbox-ops-tooling"
+    global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    system_admin_group = "tenant-admins"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "tenant-admins"
+        user_group    = "U"
+      }
+    }
+  }
+
+  expect_failures = [var.system_admin_group]
+}
+
+run "rejects_system_admin_group_equal_to_tenant_user_group" {
+  command = plan
+
+  variables {
+    environment        = "sandbox-ops-tooling"
+    global_admin_group = "PERM-C-SONAR-Test-GlobalAdminGroup"
+    system_admin_group = "tenant-users"
+
+    tenants = {
+      apc = {
+        project_regex = "^apc-.*"
+        admin_group   = "A"
+        user_group    = "tenant-users"
+      }
+    }
+  }
+
+  expect_failures = [var.system_admin_group]
+}

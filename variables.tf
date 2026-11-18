@@ -17,6 +17,27 @@ variable "tenants" {
   }))
 }
 
+variable "system_admin_group" {
+  description = "Group is solely for the admin user so it can access all projects in order to update tags for the hod automation"
+  type        = string
+  default     = "sonar-administrators"
+
+  # Each sonarqube_permissions resource is authoritative for one group on one template. A group that
+  # appears in two resources on the same template would have its grants overwritten by whichever applies last,
+  # and changing this variable later could revoke access still intended by the other resource.
+  validation {
+    condition     = var.system_admin_group == null || var.system_admin_group != var.global_admin_group
+    error_message = "system_admin_group must not be the same group as global_admin_group (overlapping permission resources on the same templates)."
+  }
+
+  validation {
+    condition = var.system_admin_group == null || alltrue([
+      for t in values(var.tenants) : var.system_admin_group != t.admin_group && var.system_admin_group != t.user_group
+    ])
+    error_message = "system_admin_group must not be the same group as any tenant admin_group or user_group (overlapping permission resources on the same templates)."
+  }
+}
+
 variable "manage_default_template" {
   description = "When true, the module creates and sets a managed default permission template that grants NO sonar-users (all authenticated users) access, so new projects that do not match a tenant pattern are private by default rather than world-visible. Leave false to not touch the instance default template."
   type        = bool
